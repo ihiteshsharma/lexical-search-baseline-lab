@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """SQLite FTS5 retrieval baseline reconstructed from the existing draft."""
 
+import json
 import math
 import sqlite3
 import tempfile
@@ -148,12 +149,34 @@ def demo():
         rebuild(db)
         recovered = evaluate(db)
         assert recovered == baseline
-        assert search(db, "automobile") == []
-        print({"baseline": baseline, "broken": broken, "recovered": recovered})
+        synonym_miss = search(db, "automobile") == []
+        assert synonym_miss
+        checks = {
+            "baseline_gate_passed": baseline["gate_passed"],
+            "index_loss_failed_gate": not broken["gate_passed"],
+            "rebuild_restored_exact_baseline": recovered == baseline,
+            "absent_synonym_remained_a_miss": synonym_miss,
+        }
+        report = {
+            "verdict": "passed" if all(checks.values()) else "failed",
+            "checks": checks,
+            "baseline": {
+                "source_count": baseline["source_count"],
+                "index_count": baseline["index_count"],
+                "recall_at_3": baseline["recall_at_3"],
+                "ndcg_at_3": baseline["ndcg_at_3"],
+            },
+            "broken_index_count": broken["index_count"],
+            "conclusion": (
+                "Lexical retrieval is a reproducible control for exact terms; "
+                "arbitrary synonymy remains outside this representation."
+            ),
+        }
+        print(json.dumps(report, indent=2))
+        return report
     finally:
         db.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
     demo()
-
