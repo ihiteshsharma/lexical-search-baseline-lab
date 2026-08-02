@@ -2,10 +2,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from search_lab import evaluate, initialize, rebuild, remove_from_index, search
+from search_lab import demo, evaluate, initialize, rebuild, remove_from_index, search
 
 
 class RetrievalBaselineIntegrationTest(unittest.TestCase):
+    def test_demo_states_control_and_representation_limit(self):
+        report = demo()
+        self.assertEqual(report["verdict"], "passed")
+        self.assertTrue(all(report["checks"].values()))
+        self.assertIn("reproducible control", report["conclusion"])
+        self.assertIn("synonymy", report["conclusion"])
+
     def test_index_loss_fails_the_gate_and_rebuild_restores_exact_baseline(self):
         with tempfile.TemporaryDirectory() as directory:
             db = Path(directory) / "search.db"
