@@ -16,17 +16,37 @@ python3 -m unittest -v test_lab.py
 python3 search_lab.py
 ```
 
-Expected baseline:
+Expected decision record:
 
-```text
-source_count = 20
-index_count = 20
-Recall@3 = 1.0
-nDCG@3 = 0.958498
-gate_passed = true
+```json
+{
+  "verdict": "passed",
+  "checks": {
+    "baseline_gate_passed": true,
+    "index_loss_failed_gate": true,
+    "rebuild_restored_exact_baseline": true,
+    "absent_synonym_remained_a_miss": true
+  },
+  "baseline": {
+    "source_count": 20,
+    "index_count": 20,
+    "recall_at_3": 1.0,
+    "ndcg_at_3": 0.958498
+  },
+  "broken_index_count": 19,
+  "conclusion": "Lexical retrieval is a reproducible control for exact terms; arbitrary synonymy remains outside this representation."
+}
 ```
 
 These values are deterministic for the fixed corpus, queries, qrels, and SQLite ranking expression in this repository. They are a lab control, not a general search-quality claim.
+
+## Conclusion supported
+
+For the fixed corpus and judgments, lexical retrieval is a reproducible control: index loss fails the declared gate and a rebuild restores the exact baseline.
+
+## Conclusion not supported
+
+The empty automobile result demonstrates a representation limit, not a universal failure of lexical search. This lab does not establish that embeddings improve the same evaluation set; a dense or hybrid candidate must be measured separately.
 
 ## What the metrics mean
 
@@ -79,4 +99,3 @@ The demo and test use temporary SQLite files and remove them automatically. If a
 ## Related article
 
 This repository is the repeatable evidence artifact for “Build a Lexical Search Baseline Before Adding Embeddings.”
-
